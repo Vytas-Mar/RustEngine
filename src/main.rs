@@ -1,43 +1,24 @@
-enum OrderType {
-    Bid,
-    Ask,
-}
+mod matching_engine;
+mod order;
+mod orderbook;
+mod price_level;
+mod side;
+mod trade;
 
-struct Price {
-    integral: u64,
-    fractional: u64,
-    scalar: u64,
-}
+use order::*;
+use orderbook::*;
+use side::*;
 
-impl Price {
-    fn new(price: f64) -> Price {
-        let scalar = 10000;
-        let integral = price as u64;
-        let fractional = (price % 1.0 * scalar as f64) as u64;
-
-        Price {
-            integral,
-            fractional,
-            scalar,
-        }
-    }
-}
-struct Limit {
-    price: Price,
-    orders: Vec<Order>,
-}
-
-struct Order {
-    size: f64,
-    order_type: OrderType,
-}
-
-impl Order {
-    fn new(order_type: OrderType, size: f64) -> Order {
-        Order { size, order_type }
-    }
-}
+use crate::matching_engine::MatchingEngine;
 
 fn main() {
-    println!("Hello, world!");
+    let mut orderbook = Orderbook::new();
+    let mut engine = MatchingEngine::new(orderbook);
+    let order1 = Order::new(1, 100, 2, Side::Buy);
+    let order2 = Order::new(2, 100, 3, Side::Buy);
+
+    engine.book.insert_order(order1);
+    engine.book.insert_order(order2);
+
+    println!("{:#?}", engine.book);
 }
