@@ -7,6 +7,7 @@ pub mod side;
 pub mod trade;
 pub mod utils;
 
+pub use depth::*;
 pub use matching_engine::MatchingEngine;
 pub use order::Order;
 pub use orderbook::Orderbook;

@@ -31,6 +31,7 @@ function App() {
 
     try {
       engineRef.current = new WasmEngine();
+      window.engine = engineRef.current;
       if (mounted) setWasmReady(true);
     } catch (err) {
       if (mounted) setWasmError(String(err));

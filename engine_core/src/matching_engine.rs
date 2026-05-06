@@ -1,3 +1,4 @@
+use crate::depth::*;
 use crate::order::Order;
 use crate::orderbook::{self, Orderbook};
 use crate::side::Side;
