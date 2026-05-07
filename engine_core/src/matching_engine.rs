@@ -76,10 +76,11 @@ impl MatchingEngine {
                         let should_pop = front.qty == 0;
 
                         (maker_id, fill_qty, should_pop)
-                    }; // `front` borrow ends here
+                    };
 
-                    self.trades
-                        .push(Trade::new(maker_id, order.id, best_price, fill_qty));
+                    self.trades.push(Trade::new(
+                        maker_id, order.id, order.side, best_price, fill_qty,
+                    ));
 
                     order.qty -= fill_qty;
 

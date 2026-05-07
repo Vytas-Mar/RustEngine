@@ -1,10 +1,6 @@
-use engine_core::orderbook;
 use engine_core::MatchingEngine;
 use engine_core::Orderbook;
 use engine_core::Side;
-use engine_core::Trade;
-use serde::{Deserialize, Serialize};
-use serde_wasm_bindgen::*;
 use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub struct WasmEngine {

@@ -16,7 +16,7 @@ const OrderEntryPanel = ({ onLogEngine, onAddTestTrade, onPlaceOrder }) => {
     if (parsedPrice < 0 || parsedQty < 0) return;
 
     onPlaceOrder({
-      price: Math.trunc(parsedPrice),
+      price: parsedPrice,
       qty: Math.trunc(parsedQty),
       side,
     });
@@ -41,7 +41,7 @@ const OrderEntryPanel = ({ onLogEngine, onAddTestTrade, onPlaceOrder }) => {
           <input
             type="number"
             min="0"
-            step="1"
+            step="0.01"
             value={price}
             onChange={(event) => setPrice(event.target.value)}
           />

@@ -25,14 +25,14 @@ impl Orderbook {
         level.add_order(order);
     }
 
-    pub fn best_bid_level(&mut self) -> Option<(u64, &PriceLevel)> {
+    pub fn best_bid_level(&self) -> Option<(u64, &PriceLevel)> {
         self.bids
             .iter()
             .next_back()
             .map(|(price, level)| (*price, level))
     }
 
-    pub fn best_ask_level(&mut self) -> Option<(u64, &PriceLevel)> {
+    pub fn best_ask_level(&self) -> Option<(u64, &PriceLevel)> {
         self.asks
             .iter()
             .next()
