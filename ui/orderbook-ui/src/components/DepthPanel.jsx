@@ -1,10 +1,18 @@
-const DepthTable = ({ side, rows, maxTotal }) => {
-  const isBid = side === "bid";
+const DEPTH_COLS = (
+  <colgroup>
+    <col style={{ width: "40%" }} />
+    <col style={{ width: "30%" }} />
+    <col style={{ width: "30%" }} />
+  </colgroup>
+);
 
+const DepthHeader = ({ side }) => {
+  const isBid = side === "bid";
   return (
     <div>
       <h3 className={isBid ? "bid" : "ask"}>{isBid ? "Bids" : "Asks"}</h3>
       <table>
+        {DEPTH_COLS}
         <thead>
           <tr>
             <th>Price</th>
@@ -12,6 +20,17 @@ const DepthTable = ({ side, rows, maxTotal }) => {
             <th>Total</th>
           </tr>
         </thead>
+      </table>
+    </div>
+  );
+};
+
+const DepthBody = ({ side, rows, maxTotal }) => {
+  const isBid = side === "bid";
+  return (
+    <div>
+      <table>
+        {DEPTH_COLS}
         <tbody>
           {rows.map((row) => (
             <tr
@@ -38,12 +57,19 @@ const DepthPanel = ({ bids, asks }) => {
     <section className="panel depth">
       <div className="panel-heading">
         <h2>Depth</h2>
-        <span>Levels: {bids.length} / {asks.length}</span>
+        <span>
+          Levels: {bids.length} / {asks.length}
+        </span>
+      </div>
+
+      <div className="book-grid-header">
+        <DepthHeader side="bid" />
+        <DepthHeader side="ask" />
       </div>
 
       <div className="book-grid">
-        <DepthTable side="bid" rows={bids} maxTotal={maxBidTotal} />
-        <DepthTable side="ask" rows={asks} maxTotal={maxAskTotal} />
+        <DepthBody side="bid" rows={bids} maxTotal={maxBidTotal} />
+        <DepthBody side="ask" rows={asks} maxTotal={maxAskTotal} />
       </div>
     </section>
   );

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { WasmEngine, WasmSide } from "engine_wasm";
+import { WasmEngine, WasmReplayer, WasmSide } from "engine_wasm";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { Toaster, toast } from "sonner";
 import "./App.css";
@@ -15,6 +15,8 @@ import TradesPanel from "./components/TradesPanel";
 
 const PRICE_SCALE = Number(WasmEngine.price_scale());
 const MAX_TRADES_DISPLAYED = 1000;
+const RECORDINGS_STORAGE_KEY = "trading-engine-recordings";
+const MAX_RECORDINGS = 50;
 
 const DEFAULT_SIM_CONFIG = {
   seed: 42,
@@ -54,6 +56,25 @@ function App() {
   const [activeTab, setActiveTab] = useState("orders");
   const [simMetrics, setSimMetrics] = useState(null);
   const activeSimConfigRef = useRef(null);
+  const [recordings, setRecordings] = useState(() => {
+    try {
+      const raw = localStorage.getItem(RECORDINGS_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        RECORDINGS_STORAGE_KEY,
+        JSON.stringify(recordings),
+      );
+    } catch (err) {
+      console.warn("Failed to persist recordings:", err);
+    }
+  }, [recordings]);
 
   const refreshSnapshot = useCallback(() => {
     const eng = engineRef.current;
@@ -105,6 +126,7 @@ function App() {
     try {
       engineRef.current = new WasmEngine();
       window.engine = engineRef.current;
+      window.WasmReplayer = WasmReplayer;
       if (mounted) {
         setWasmReady(true);
         refreshSnapshot();
@@ -182,6 +204,18 @@ function App() {
           orders_per_sec: seconds > 0 ? orders_placed / seconds : 0,
           trades_per_sec: seconds > 0 ? trades_executed / seconds : 0,
         });
+
+        setRecordings((prev) =>
+          [
+            {
+              id: crypto.randomUUID(),
+              createdAt: Date.now(),
+              config,
+              totalEvents: n,
+            },
+            ...prev,
+          ].slice(0, MAX_RECORDINGS),
+        );
 
         toast.success(
           `Burst ${n}: ${trades_executed} trades in ${wall_ms.toFixed(1)} ms`,
@@ -286,6 +320,15 @@ function App() {
                   onBurst={handleBurst}
                   metrics={simMetrics}
                   defaultConfig={DEFAULT_SIM_CONFIG}
+                />
+              );
+            }
+            if (id === "replay") {
+              return (
+                <Panel
+                  key={id}
+                  recordings={recordings}
+                  setRecordings={setRecordings}
                 />
               );
             }

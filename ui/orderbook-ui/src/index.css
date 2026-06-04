@@ -34,3 +34,37 @@ body {
   background: var(--bg);
   color: var(--text);
 }
+
+/* Custom scrollbars — Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* Custom scrollbars — WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 124, 132, 0.3);
+  border-radius: 2px;
+  transition: background 140ms ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 124, 132, 0.6);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(180, 180, 188, 0.75);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
