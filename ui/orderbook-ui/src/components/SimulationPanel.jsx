@@ -106,8 +106,8 @@ const SimulationPanel = ({ onBurst, metrics, defaultConfig }) => {
                 <br />
                 <br />
                 <strong>
-                  → For real numbers (p50/p99/p99.9 latency from native Rust
-                  criterion benches), see the Metrics tab.
+                  → For real numbers (p50/p99/p99.9 from native Rust HDR
+                  histograms), see the Metrics tab.
                 </strong>
               </InfoTip>
             </div>

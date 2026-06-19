@@ -893,3 +893,139 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* Metrics panel */
+
+.metrics-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.metrics-empty {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.metrics-empty code,
+.metrics-note code {
+  background: var(--bg);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.metrics-note {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.metrics-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+}
+
+.metrics-table th,
+.metrics-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.metrics-table th {
+  background: var(--bg);
+  color: var(--text-dim);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+}
+
+.metrics-table tr:last-child td {
+  border-bottom: none;
+}
+
+.metrics-table .bench-name {
+  text-align: left;
+  color: var(--accent);
+}
+
+.bar-vis-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0.5rem 0 0.25rem;
+}
+
+.bar-vis-block {
+  margin-bottom: 0.75rem;
+}
+
+.bar-vis-bench-name {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 0.25rem;
+}
+
+.bar-vis {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr 5rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+}
+
+.bar-label {
+  color: var(--text-dim);
+  text-align: right;
+}
+
+.bar-track {
+  height: 8px;
+  background: var(--bg);
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 200ms ease;
+}
+
+.bar-fill.bid-bg {
+  background: var(--bid);
+}
+
+.bar-fill.ask-bg {
+  background: var(--ask);
+}
+
+.bar-value {
+  color: var(--text);
+}

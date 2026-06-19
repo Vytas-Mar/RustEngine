@@ -1,0 +1,46 @@
+{
+  "commit": "e085b29",
+  "generated_at_unix_secs": 1781849890,
+  "benches": [
+    {
+      "name": "insert_hot_level",
+      "samples": 100000,
+      "mean_ns": 48,
+      "p50_ns": 42,
+      "p99_ns": 84,
+      "p999_ns": 916,
+      "p9999_ns": 1292,
+      "max_ns": 10215
+    },
+    {
+      "name": "market_sweep_10_levels",
+      "samples": 10000,
+      "mean_ns": 778,
+      "p50_ns": 792,
+      "p99_ns": 917,
+      "p999_ns": 1000,
+      "p9999_ns": 4959,
+      "max_ns": 8671
+    },
+    {
+      "name": "burst_n100k_lambda_1k",
+      "samples": 100000,
+      "mean_ns": 115,
+      "p50_ns": 84,
+      "p99_ns": 375,
+      "p999_ns": 1250,
+      "p9999_ns": 4211,
+      "max_ns": 11919
+    },
+    {
+      "name": "burst_n100k_lambda_100k",
+      "samples": 100000,
+      "mean_ns": 111,
+      "p50_ns": 83,
+      "p99_ns": 375,
+      "p999_ns": 1292,
+      "p9999_ns": 2209,
+      "max_ns": 10167
+    }
+  ]
+}
