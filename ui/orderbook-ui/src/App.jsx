@@ -135,17 +135,18 @@ function App() {
       window.WasmReplayer = WasmReplayer;
 
       try {
+        const initConfig = { ...DEFAULT_SIM_CONFIG, seed: 7 };
         engineRef.current.start_simulation({
-          seed: BigInt(DEFAULT_SIM_CONFIG.seed),
-          mid_price: BigInt(DEFAULT_SIM_CONFIG.mid_price),
-          price_spread: BigInt(DEFAULT_SIM_CONFIG.price_spread),
-          min_qty: BigInt(DEFAULT_SIM_CONFIG.min_qty),
-          max_qty: BigInt(DEFAULT_SIM_CONFIG.max_qty),
-          market_order_prob: DEFAULT_SIM_CONFIG.market_order_prob,
-          lambda_per_sec: DEFAULT_SIM_CONFIG.lambda_per_sec,
+          seed: BigInt(initConfig.seed),
+          mid_price: BigInt(initConfig.mid_price),
+          price_spread: BigInt(initConfig.price_spread),
+          min_qty: BigInt(initConfig.min_qty),
+          max_qty: BigInt(initConfig.max_qty),
+          market_order_prob: initConfig.market_order_prob,
+          lambda_per_sec: initConfig.lambda_per_sec,
         });
-        engineRef.current.burst(50n);
-        activeSimConfigRef.current = JSON.stringify(DEFAULT_SIM_CONFIG);
+        engineRef.current.burst(200n);
+        activeSimConfigRef.current = JSON.stringify(initConfig);
       } catch (err) {
         console.warn("Auto-fill burst failed (non-fatal):", err);
       }
@@ -192,7 +193,9 @@ function App() {
       try {
         eng.amend_order_qty(BigInt(id), BigInt(newQty));
         setOpenOrders((prev) =>
-          prev.map((o) => (o.id === id ? { ...o, qty: newQty } : o)),
+          prev.map((o) =>
+            o.id === id ? { ...o, qty: newQty, originalQty: newQty } : o,
+          ),
         );
         refreshSnapshot();
         toast.success(`Amended order #${id} → qty ${newQty}`);
