@@ -3,7 +3,7 @@ import { useState } from "react";
 const PRICE_MAX = 200;
 const QTY_MAX = 100;
 
-const OrderEntryPanel = ({ onLogEngine, onAddTestTrade, onPlaceOrder }) => {
+const OrderEntryPanel = ({ onPlaceOrder }) => {
   const [side, setSide] = useState("buy");
   const [orderType, setOrderType] = useState("limit");
   const [price, setPrice] = useState("");
@@ -140,14 +140,6 @@ const OrderEntryPanel = ({ onLogEngine, onAddTestTrade, onPlaceOrder }) => {
             onClick={submitOrder}
           >
             Place Order
-          </button>
-        </div>
-        <div className="actions">
-          <button type="button" onClick={onLogEngine}>
-            Log Engine
-          </button>
-          <button type="button" onClick={onAddTestTrade}>
-            Add Test Trade
           </button>
         </div>
       </form>

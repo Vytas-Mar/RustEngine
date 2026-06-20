@@ -160,28 +160,6 @@ function App() {
     };
   }, [refreshSnapshot]);
 
-  const handleLogEngine = () => {
-    if (!engineRef.current) return;
-
-    try {
-    } catch (error) {}
-  };
-
-  const handleAddTestTrade = () => {
-    if (!engineRef.current) {
-      toast.error("Engine is not ready yet");
-      return;
-    }
-
-    try {
-      engineRef.current.place_limit_order(10125n, 2n, WasmSide.Buy);
-
-      refreshSnapshot();
-    } catch (error) {
-      console.error("WASM call failed:", error);
-    }
-  };
-
   const handleApplyRiskGate = useCallback((config) => {
     const eng = engineRef.current;
     if (!eng) throw new Error("WASM engine not ready");
@@ -354,11 +332,7 @@ function App() {
         <TopBar statusText={statusText} />
 
         <section className="grid">
-          <OrderEntryPanel
-            onLogEngine={handleLogEngine}
-            onAddTestTrade={handleAddTestTrade}
-            onPlaceOrder={handlePlaceOrder}
-          />
+          <OrderEntryPanel onPlaceOrder={handlePlaceOrder} />
           <DepthPanel bids={depth.bids} asks={depth.asks} />
           <TradesPanel
             trades={tradesList}
