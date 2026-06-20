@@ -2,9 +2,9 @@
 
 A Rust matching engine + Level 2 order book that runs in the browser via WebAssembly. Pure Rust core, thin WASM bridge, React frontend. No backend, no persistence.
 
-## Project goal
+## Scope
 
-Build a serious Rust limit-order-book / matching-engine project that demonstrates market microstructure understanding, low-latency systems thinking, Rust ownership/borrowing mastery, deterministic simulation, performance engineering, clean architecture, and visualization. Bar: "I could plausibly have built internal exchange infrastructure," not "I made a toy orderbook."
+A research-quality matching engine, not a production exchange. The goal is a credible artifact covering market microstructure, low-latency systems design, Rust ownership patterns, deterministic simulation, and disciplined performance measurement — built end-to-end with a browser UI as the inspection surface.
 
 ## High-level architecture
 
@@ -114,7 +114,7 @@ pub struct Orderbook {
     pub asks: BTreeMap<u64, PriceLevel>,
 }
 ```
-BTreeMap chosen for sorted iteration — best bid is `bids.last_key_value()`, best ask is `asks.first_key_value()`. O(log n) insert, O(log n) lookup, O(log n) remove. Sufficient for prototype; tick-indexed `Vec<PriceLevel>` is the elite alternative (see ROADMAP).
+BTreeMap chosen for sorted iteration — best bid is `bids.last_key_value()`, best ask is `asks.first_key_value()`. O(log n) insert, O(log n) lookup, O(log n) remove. Sufficient for prototype; tick-indexed `Vec<PriceLevel>` is the production alternative for near-O(1) best-price lookup.
 
 ### MatchingEngine
 ```rust
@@ -337,8 +337,6 @@ Run all: `cargo test -p engine_core`. Run integration only: `cargo test --test m
 - **No credible performance numbers yet.** The UI's "Demo throughput" measures a browser → WASM → Rust → WASM → browser round-trip; not citeable as engine perf. Native criterion benches with p50/p99 distributions are Stage 5.
 - **No real-time sim pacing.** Burst mode ignores `dt_nanos` and fires as fast as possible. JS-driven Poisson streaming (honoring `dt`) is deferred until/unless needed.
 
-See [ROADMAP.md](ROADMAP.md) for what's planned and what's elite.
-
 ## Order management & risk (Stage 6)
 
 `MatchingEngine` exposes a full order lifecycle API on top of the matching primitives:
@@ -432,48 +430,12 @@ All error paths convert the Rust `Err` variant into a `JsValue` (debug-formatted
 
 The UI ([ReplayPanel](ui/orderbook-ui/src/components/ReplayPanel.jsx)) instantiates a separate `WasmReplayer` per selected recording — the live `WasmEngine` is never disturbed. Recordings are auto-captured on every burst (seed + config + totalEvents stored as JSON in localStorage, capped at 50). Playback uses `requestAnimationFrame` with a deficit-budget model: `accumulator += dtMs * 1e6 * speed`, step events while `accumulator > 0`. Negative budgets carry forward across frames, which is what allows sub-event-per-frame slow-motion (e.g. 0.01x).
 
-## What this demonstrates (talking points)
+## Design alternatives considered
 
-Raw notes for an eventual public README / interview prep. Keep adding bullets here as features land; polish later.
-
-### Project framing
-
-> Built a serious Rust limit-order-book + matching engine in the browser via WebAssembly. Pure Rust core, thin WASM bridge, React UI. Not a toy — the bar was "I could plausibly have built internal exchange infrastructure," not "I made an orderbook for fun."
-
-### Determinism via a seeded PRNG
-
-> The simulator is driven by a seeded `ChaCha8Rng` from `rand_chacha` — not the `rand` crate's `StdRng`, because `StdRng`'s algorithm isn't pinned across versions. ChaCha8 is. Same seed → identical byte stream on x86, ARM, and WASM, today and in two years. Inside the simulator, the order of RNG draws is frozen (dt → side → is_market → qty → price_offset). That's the contract that makes everything downstream possible.
-
-### Deterministic replay
-
-> Stage 4 is deterministic replay. Because Stage 3 locked down the seeded PRNG with a frozen draw order, "replay" just means: store ~100 bytes (seed + config), then instantiate a fresh engine + simulator pair, step through events one at a time, and pace them in real time using each event's exponentially-distributed `dt_nanos`. Scrub backward = reset + replay forward, because matching is irreversible — at our scale (microsecond-per-event) it's free. Every recording is bit-identical across runs, machines, and reloads. Same property that makes integration tests reliable also gives you a debugging scrubber.
-
-### Architectural decoupling
-
-> The simulator never touches the engine. The engine doesn't know what a simulator is. They're connected by a thin free function (`run_burst`) that operates on both. That separation is why the simulator can be reused across burst mode, replay, and (eventually) criterion benches without any of them knowing about each other.
-
-### Module organization
-
-> Public API is decoupled from internal layout. Engine internals live in a private `engine/` module; types are re-exported flat at the crate root. Outsiders see `engine_core::Order`, not `engine_core::engine::order::Order`. Tomorrow I can move `order` to `engine::primitives::order::Order` — change one re-export line in `lib.rs`, the entire outside world is unaffected.
-
-### Drain semantics on trades
-
-> The engine's `trades` Vec is a queue waiting to be consumed, not a database. `drain_trades()` uses `mem::take` to hand ownership to the caller and zero the buffer. This bounds the WASM linear memory footprint regardless of session length and bounds serialization cost per refresh to "new since last drain." Trade history lives in React state. The engine is a streaming producer; persistence (if needed) is somebody else's job.
-
-### Mathematical detail (Poisson arrivals)
-
-> Inter-arrival times use inverse transform sampling: draw `u ~ Uniform(0,1)`, compute `-ln(u) / λ` to get an exponentially-distributed gap with mean `1/λ`. This is the standard model of independent random events arriving over time — radioactive decay, packet arrivals, customers at a queue, orders hitting an exchange. Result is the "bursty, not metronomic" texture of real markets.
-
-### Honest performance framing
-
-> The UI shows a live "Demo throughput" number that measures a browser → WASM call → Rust burst → WASM return → browser round-trip. It includes BigInt marshalling, serde serialization, and browser timer fuzzing (≈100 µs precision for Spectre mitigation). It's a regression canary during development — not citeable as engine performance. Real numbers, with full latency distributions (p50/p99/p99.9), come from native Rust criterion benchmarks (Stage 5). The UI is honest about being a demo; the bench is honest about being a benchmark. Two measurement systems, two purposes.
-
-### Tradeoffs not taken (the strongest answer in an interview)
-
-> - `BTreeMap` for the book over a tick-indexed `Vec<PriceLevel>` — chose log-n sorted iteration for now; tick-indexed array is the real-exchange answer for near-O(1) best-price lookup, but it needs a price range and tick size up front.
-> - Seed-based replay over event-stream replay — store the seed (100 bytes) instead of recording every event (KBs to MBs). Works because Stage 3 is deterministic; wouldn't work if I'd mixed in manual UI orders.
-> - Draining trades instead of growing the Vec — chose producer-consumer streaming over database-style accumulation. Bounds memory and serialization cost; loses the ability to query historical trades from Rust (the UI keeps that history instead).
-> - Burst mode ignores `dt_nanos` — discarded real-time pacing to expose engine throughput. Real-time playback honoring `dt` lives in the replay stage; burst is for stressing the engine, replay is for inspecting it.
-> - `HashMap<order_id, (price, side)>` for cancel/amend lookup over an arena+intrusive linked list — chose simple safe Rust. Cancel is O(log L + K) instead of true O(1), but at our scale that's sub-microsecond. Intrusive lists need `unsafe` or `slotmap`; the upgrade path is clear when scale demands it.
-> - Risk gate integrated into the engine vs separate gateway — real exchanges put risk checks in a gateway in front of the matching core for blast-radius isolation. For a single-process project, integrated is simpler and demonstrates the concept; the gateway pattern is the natural next step at scale.
-> - Amend size-down only (size-up rejected) — real exchanges typically allow size-up but treat it as cancel + re-place, losing FIFO priority. My v1 forces the caller to do that explicitly. Cleaner semantics, less hidden behavior.
+- **`BTreeMap` over tick-indexed `Vec<PriceLevel>`** — chosen for log-n sorted iteration without requiring a fixed price range. The tick-indexed array is the production-grade alternative for near-O(1) best-price lookup, but it requires a known price range and tick size at construction.
+- **Seed-based replay over event-stream replay** — recordings store the seed and config (~100 bytes) rather than every event (KBs to MBs). Possible because the simulator is deterministic; wouldn't compose with manual UI orders mixed into the stream.
+- **Draining trades over growing the Vec** — producer-consumer streaming bounds WASM memory and per-refresh serialization cost. Trade-off: Rust loses the ability to query historical trades; the UI keeps that history in React state instead.
+- **Burst mode ignores `dt_nanos`** — real-time pacing is discarded to expose raw engine throughput. Real-time playback honoring `dt` lives in the replay stage; burst is for stressing the engine, replay is for inspecting it.
+- **`HashMap<order_id, (price, side)>` over an arena + intrusive linked list** for cancel/amend lookup — keeps the code in safe Rust. Cancel is O(log L + K) instead of true O(1); at the project's scale that's still sub-microsecond. Intrusive lists require `unsafe` or `slotmap`; the upgrade path is clear when scale demands it.
+- **Risk gate integrated into the engine vs. a separate gateway process** — real exchanges put risk checks in a gateway in front of the matching core for blast-radius isolation. For a single-process project, integration is simpler and demonstrates the concept; the gateway pattern is the natural next step at scale.
+- **Amend size-down only (size-up rejected)** — real exchanges typically allow size-up but treat it as cancel + re-place, losing FIFO priority. v1 forces the caller to do that explicitly: cleaner semantics, less hidden behavior.
