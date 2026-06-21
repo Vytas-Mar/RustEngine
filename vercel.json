@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd ui/orderbook-ui && npm install && npm run build",
+  "outputDirectory": "ui/orderbook-ui/dist",
+  "installCommand": "echo 'skipping root install — handled in buildCommand'"
+}
